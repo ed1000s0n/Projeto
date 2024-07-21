@@ -122,8 +122,18 @@ public class Main {
 
                 // Parsear o JSON-LD
                 JSONObject jsonObject = new JSONObject(jsonLd);
+                
+                if (jsonObject.has("@graph")) {
+                    // O campo existe, você pode acessá-lo
+                    JSONObject graph = jsonObject.getJSONObject("@graph");
+                    System.out.println("Nome: " + graph.getString("name"));
+                    System.out.println("Idade: " + graph.getInt("age"));
+                } else {
+                    // O campo não existe
+                    System.out.println("Campo '@graph' não encontrado.");
+                    System.exit(0);
+                }
                 JSONArray graphArray = jsonObject.getJSONArray("@graph");
-
                 // Encontrar o objeto Product no array
                 productObject = graphArray.getJSONObject(0);
             }
