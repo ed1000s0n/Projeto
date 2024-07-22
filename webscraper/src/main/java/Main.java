@@ -7,7 +7,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.FileWriter;
@@ -18,10 +17,9 @@ import java.net.URL;
 
 public class Main {
     public static void main(String[] args) {
-        // Exemplo de link recebido do usuário
+
         Scanner scanner = new Scanner(System.in);
 
-        // Lê uma linha de texto
         System.out.print("Digite ou cole o link do produto desejado: ");
         String userLink = scanner.nextLine();
         String requiredPrefix = "https://www.netshoes.com.br/p/";
@@ -30,7 +28,6 @@ public class Main {
             if (isURLAccessible(userLink)) {
                 System.out.println("O link é válido, tem o prefixo necessário e é acessível.");
                 try {
-                    // Chama o método para gerar o arquivo JSON
                     generateJSONFile(userLink);
                 } catch (IOException e) {
                     System.out.println("Erro ao gerar o arquivo JSON.");
@@ -46,77 +43,45 @@ public class Main {
 
     public static void generateJSONFile(String userLink) throws IOException {
         try (final WebClient webClient = new WebClient(BrowserVersion.CHROME)) {
-            webClient.getOptions().setJavaScriptEnabled(false); // Desativa JavaScript
-            webClient.getOptions().setCssEnabled(false); // Desativa CSS se não for necessário
+            webClient.getOptions().setJavaScriptEnabled(false);
+            webClient.getOptions().setCssEnabled(false);
 
-            // Carregar a página
             HtmlPage page = webClient.getPage(userLink);
-
-            // Esperar a página carregar completamente
-            webClient.waitForBackgroundJavaScript(10000); // Aumente o tempo se necessário
-
-            // Obter o HTML como String
+            webClient.waitForBackgroundJavaScript(10000);
             String pageAsXml = page.asXml();
-
-            // Usar Jsoup para parsear o HTML
             Document doc = Jsoup.parse(pageAsXml);
 
-            // Encontrar a tag <script> com o tipo application/ld+json
             Elements scripts = doc.select("script[type=application/ld+json]");
             JSONObject productObject = null;
-            for (Element script : scripts) {
-                // Extrair o conteúdo do script, removendo CDATA
-                String jsonLd = script.html();
-                jsonLd = jsonLd.replaceAll("//<!\\[CDATA\\[", "").replaceAll("//\\]\\]>", "").trim();
-
-                // Parsear o JSON-LD
-                JSONObject jsonObject = new JSONObject(jsonLd);
-                JSONArray graphArray = null;
-                if (jsonObject.has("@graph")) {
-                    // O campo existe, você pode acessá-lo
-                    // JSONObject graph = jsonObject.getJSONObject("@graph");
-                    graphArray = jsonObject.getJSONArray("@graph");
-                    // https://www.netshoes.com.br/p/tenis-adidas-breaknet-masculino-branco+preto-NQQ-4378-890System.out.println("Nome:
-                    // " + graph.getString("name"));
-                } else {
-                    // O campo não existe
-                    System.out.println("Campo '@graph' não encontrado.");
-                    System.exit(0);
-                }
-
-                // Encontrar o objeto Product no array
-                productObject = graphArray.getJSONObject(0);
-            }
+            productObject = TratamentoErro404(scripts, productObject);
 
             if (productObject != null) {
-                // Extrair as informações desejadas
                 String name = productObject.optString("name");
                 String description = productObject.optString("description");
                 JSONArray imageArray = productObject.optJSONArray("image");
                 String lowPrice = productObject.optJSONObject("offers").optString("lowPrice");
-              
-                // Criar o objeto JSON final
+
                 JSONObject jsonOutput = new JSONObject();
                 jsonOutput.put("name", name);
                 jsonOutput.put("description", description);
                 jsonOutput.put("lowPrice", lowPrice);
 
-                ArrayList <String> images = new ArrayList <String>();
+                ArrayList<String> images = new ArrayList<String>();
                 if (imageArray != null) {
-                    for (Object imagem: imageArray) {
+                    for (Object imagem : imageArray) {
                         images.add("https://static.netshoes.com.br" + imagem.toString());
                     }
                 }
-                Produto dados = new Produto(name,lowPrice,description, images);
+                Produto dados = new Produto(name, lowPrice, description, images);
                 Imprimir(dados);
                 TelaOutput saida = new TelaOutput();
-                saida.AtualizarDados(dados);https://static.netshoes.com.br/produtos/tenis-adidas-breaknet-masculino/90/NQQ-4378-890/NQQ-4378-890_zoom4.jpg?ts=1705939673
+                saida.AtualizarDados(dados);
                 jsonOutput.put("images", imageArray);
 
-                // Salvar o JSON em um arquivo
                 try (FileWriter file = new FileWriter("ArquivoJson/product_info.json")) {
-                    file.write(jsonOutput.toString(4)); // 4 é o nível de indentação
+                    file.write(jsonOutput.toString(4));
                     System.out.println("Arquivo JSON gerado com sucesso!");
+                    System.exit(0);
                 }
             }
         } catch (Exception e) {
@@ -149,16 +114,35 @@ public class Main {
     }
 
     public static void Imprimir(Produto p) {
-        // Imprimir as informações
-        System.out.println("Nome do Produto: " + p.getNome() +"\n");
-        System.out.println("Preço: " + p.getPreco()+"\n");
-        System.out.println("Descrição do produto: " + p.getDescricao()+"\n");
+        System.out.println("Nome do Produto: " + p.getNome() + "\n");
+        System.out.println("Preço: " + p.getPreco() + "\n");
+        System.out.println("Descrição do produto: " + p.getDescricao() + "\n");
 
         if (p.getImagem() != null) {
             for (String imagem : p.getImagem()) {
-                System.out.println("Imagem: "+ imagem);
+                System.out.println("Imagem: " + imagem);
             }
         }
+
+    }
+
+    public static JSONObject TratamentoErro404(Elements scripts, JSONObject productObject) {
+
+        for (Element script : scripts) {
+            String jsonLd = script.html();
+            jsonLd = jsonLd.replaceAll("//<!\\[CDATA\\[", "").replaceAll("//\\]\\]>", "").trim();
+            JSONObject jsonObject = new JSONObject(jsonLd);
+            JSONArray graphArray = null;
+            if (jsonObject.has("@graph")) {
+                graphArray = jsonObject.getJSONArray("@graph");
+
+            } else {
+                System.out.println("Erro 404 encontrado, sua URL não é valida ou o produto está indispinivel.");
+                System.exit(0);
+            }
+            productObject = graphArray.getJSONObject(0);
+        }
+        return productObject;
 
     }
 }

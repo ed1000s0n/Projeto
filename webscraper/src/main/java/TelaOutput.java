@@ -32,34 +32,34 @@ public class TelaOutput extends javax.swing.JPanel {
         frame.setSize(800, 600);
         frame.setLayout(null);
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); 
         jLabel1.setText("PRODUTO");
         frame.add(jLabel1);
         jLabel1.setBounds(6, 6, 68, 20);
 
-        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); 
         jLabel4.setText("DESCRIÇÃO");
         frame.add(jLabel4);
         jLabel4.setBounds(10, 180, 77, 20);
 
-        l_descricao.setFont(new Font("Segoe UI", Font.PLAIN, 18)); // NOI18N
+        l_descricao.setFont(new Font("Segoe UI", Font.PLAIN, 18)); 
         l_descricao.setText("Teste");
         l_descricao.setVerticalAlignment(SwingConstants.TOP);
         l_descricao.setBounds(10, 210, 690, 300);
         frame.add(l_descricao);
 
-        l_titulo.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        l_titulo.setFont(new java.awt.Font("Segoe UI", 0, 18)); 
         l_titulo.setText("Título");
         l_titulo.setVerticalAlignment(SwingConstants.TOP);
         l_titulo.setBounds(10, 30, 420, 70);
         frame.add(l_titulo);
 
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); 
         jLabel6.setText("PREÇO");
         frame.add(jLabel6);
         jLabel6.setBounds(10, 100, 45, 20);
 
-        l_preco.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        l_preco.setFont(new java.awt.Font("Segoe UI", 0, 18)); 
         l_preco.setText("PREÇO");
         frame.add(l_preco);
         l_preco.setBounds(10, 120, 90, 30);
@@ -76,14 +76,14 @@ public class TelaOutput extends javax.swing.JPanel {
         l_descricao.setText("<html>"+p.getDescricao()+"</html>");
 
         try {
-            URL imageUrl = new URL(p.getImagem().get(0)); // Supondo que Produto tem um método getImagemUrl()
+            URL imageUrl = new URL(p.getImagem().get(0)); 
             BufferedImage bufferedImage = ImageIO.read(imageUrl);
             Image resizedImage = bufferedImage.getScaledInstance(l_imagem.getWidth(), l_imagem.getHeight(), Image.SCALE_SMOOTH);
             ImageIcon imageIcon = new ImageIcon(resizedImage);
             l_imagem.setIcon(imageIcon);
         } catch (IOException e) {
             e.printStackTrace();
-            l_imagem.setIcon(null); // Remove a imagem se ocorrer um erro
+            l_imagem.setIcon(null); 
         }
     }
 
